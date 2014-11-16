@@ -166,6 +166,7 @@ def main():
 
     showTextScreen('Tetromino')
     while True: # game loop
+        # Removed sound so I could play on my computer
         # if random.randint(0, 1) == 0:
         #     pygame.mixer.music.load('tetrisb.mid')
         # else:
