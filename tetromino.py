@@ -270,7 +270,7 @@ def runGame():
             lastMoveSidewaysTime = time.time()
 
         if movingDown and time.time() - lastMoveDownTime > MOVEDOWNFREQ and isValidPosition(board, fallingPiece, adjY=1):
-            fallingPiece['y'] += 1
+            # fallingPiece['y'] += 1
             lastMoveDownTime = time.time()
 
         # let the piece fall if it is time to fall
@@ -284,7 +284,7 @@ def runGame():
                 fallingPiece = None
             else:
                 # piece did not land, just move the piece down
-                fallingPiece['y'] += 1
+                # fallingPiece['y'] += 1
                 lastFallTime = time.time()
 
         # drawing everything on the screen
