@@ -10,7 +10,7 @@ FPS = 25
 WINDOWWIDTH = 640
 WINDOWHEIGHT = 480
 BOXSIZE = 20
-BOARDWIDTH = 10
+BOARDWIDTH = 4
 BOARDHEIGHT = 20
 BLANK = '.'
 
@@ -166,14 +166,13 @@ def main():
 
     showTextScreen('Tetromino')
     while True: # game loop
-        # Removed sound so I could play on my computer
         # if random.randint(0, 1) == 0:
         #     pygame.mixer.music.load('tetrisb.mid')
         # else:
         #     pygame.mixer.music.load('tetrisc.mid')
         # pygame.mixer.music.play(-1, 0.0)
         runGame()
-        pygame.mixer.music.stop()
+        # pygame.mixer.music.stop()
         showTextScreen('Game Over')
 
 
@@ -271,7 +270,7 @@ def runGame():
             lastMoveSidewaysTime = time.time()
 
         if movingDown and time.time() - lastMoveDownTime > MOVEDOWNFREQ and isValidPosition(board, fallingPiece, adjY=1):
-            # fallingPiece['y'] += 1
+            fallingPiece['y'] += 1
             lastMoveDownTime = time.time()
 
         # let the piece fall if it is time to fall
@@ -285,7 +284,7 @@ def runGame():
                 fallingPiece = None
             else:
                 # piece did not land, just move the piece down
-                # fallingPiece['y'] += 1
+                fallingPiece['y'] += 1
                 lastFallTime = time.time()
 
         # drawing everything on the screen
