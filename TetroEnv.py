@@ -13,16 +13,25 @@ class TetroEnv(Environment):
         self.pieces = [0, 1, 2, 3, 4, 5, 6]
         self.piece = random.choice(self.pieces)
         self.ActionValid = True
+        self.highestRow = None
 
     def getSensors(self):
         board, highestRow = boardToState(self.board, self.piece)
+        self.highestRow = highestRow
         convstate = sum(np.array(board)*np.array([0, 1, 2, 2**2, 2**4,
                         2**5, 2**6, 2**7, 2**8, 2**9, 2**10, 2**11, 2**12,
                         2**13, 2**14]))
         return [int(convstate)]
 
+    def getRewardData(self, highestRow):
+        board, highestRow = boardToState(self.board, self.piece, highestRow)
+        return board
+
     def getActionValid(self):
         return self.ActionValid
+
+    def getHighestRow(self):
+        return self.highestRow
 
     def performAction(self, action):
         print action

@@ -7,21 +7,29 @@ class TetroTask(Task):
     def __init__(self, environment):
         self.env = environment
         self.lastreward = 0
-        self.oldstate = np.zeros((7,4))
+        self.oldstate = np.zeros((7, 4))
         self.newstate = None
         rewards = np.array([0,1,2,3,4,5,6]).reshape(7,1)*np.ones((7,4))
+        self.highestRow = None
+        self.oldRow = 6
 
     def performAction(self, action):
         self.env.performAction(action)
 
     def getObservation(self):
-        sensors = self.env.getSensors()
+        sensors, self.highestRow = self.env.getSensors()
         self.newstate = sensors
         return sensors
 
     def getReward(self):
         if self.env.getActionValid():
-            reward = 10
+            old = np.array(self.oldstate[0:-3]).reshape(3, 4)
+            new = np.array(self.env.getRewardData(self.highestRow)[0:-3]).reshape(3, 4)
+            old = old * np.array([4, 2, 1]).reshape(3,1)
+            new = new * np.array([4, 2, 1]).reshape(3,1)
+            old = (1 / (np.sum(old, axis=0)+1)) * 7
+            new = np.sum(new, axis=0)
+
         else:
             reward = -10000
         cur_reward = self.lastreward
