@@ -25,6 +25,7 @@ experiment = Experiment(task, agent)
 
 # Train the learner
 for i in range(300):
-    experiment.doInteractions(15)
+    print i
+    experiment.doInteractions(1)
     agent.learn()
     agent.reset()
