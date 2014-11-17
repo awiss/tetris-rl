@@ -328,7 +328,7 @@ def getPieces(board, shape_num):
 
             testPiece = {'shape': shape,
                 'rotation': rot,
-                'x': x+2,
+                'x': x,
                 'y': 0 }
             if isValidPosition(board, testPiece):
                 pieces.append(testPiece)
@@ -340,7 +340,7 @@ def intToPiece(action, shape_num):
     rotation = action % 4
     return {'shape': shapes[shape_num],
             'rotation': rotation,
-            'x': x,
+            'x': x - 2,
             'y': 0}
 
 
@@ -350,7 +350,7 @@ def actionIsValid(action, shape_num, board):
 
 # Piece -> integer representing position and orientation
 def pieceToInt(piece):
-    return piece['x'] * 4 + piece['rotation'] 
+    return (piece['x'] + 2) * 4 + piece['rotation'] 
 
 
 # Take unconverted board, converts it and finds the state
