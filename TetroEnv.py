@@ -1,6 +1,7 @@
 from pybrain.rl.environments.environment import Environment
 from tetromino4 import *
 import random
+import numpy as np
 class TetroEnv(Environment):
     # number of actions
     indim = 15
@@ -14,13 +15,20 @@ class TetroEnv(Environment):
         self.ActionValid = True
 
     def getSensors(self):
-        return boardToState(self.board, self.piece)
+        board, highestRow = boardToState(self.board, self.piece)
+        convstate = sum(np.array(board)*np.array([0, 1, 2, 2**2, 2**4,
+                        2**5, 2**6, 2**7, 2**8, 2**9, 2**10, 2**11, 2**12,
+                        2**13, 2**14]))
+        return [int(convstate)]
 
-    def getActionValid():
+    def getActionValid(self):
         return self.ActionValid
 
     def performAction(self, action):
-        if actionIsValid(self.board, self.piece, action):
+        print action
+        action = int(action[0])
+        print action
+        if actionIsValid(action, self.piece, self.board):
             self.ActionValid = True
             [self.board, lines] = addAndClearLines(self.board, self.piece)
             if len(self.pieces) == 1:
