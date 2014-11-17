@@ -1,9 +1,9 @@
 from pybrain.rl.environments.environment import Environment
 from tetromino4 import *
 import random
-class TeteroEnv(Environment):
+class TetroEnv(Environment):
     # number of actions
-    indim = 16
+    indim = 15
     # number of states output by sensor
     outdim = 2**15
 
@@ -14,7 +14,7 @@ class TeteroEnv(Environment):
         self.ActionValid = True
 
     def getSensors(self):
-        return boardToState(self.board, piece)
+        return boardToState(self.board, self.piece)
 
     def getActionValid():
         return self.ActionValid
