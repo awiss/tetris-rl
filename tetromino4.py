@@ -306,13 +306,14 @@ def boardToState(board, shape_num, highest = -1):
         highestRow = BOARDHEIGHT - 1
         for i in xrange(BOARDHEIGHT):
             for j in xrange(BOARDWIDTH):
-                if board[j][i]:
+                if b_board[j][i]:
                     highestRow = i
                     break
             if highestRow < BOARDHEIGHT - 1:
                 break
+    print b_board
     start = min(highestRow-1, BOARDHEIGHT - 7)
-    np_board = np.array(board)
+    np_board = np.array(b_board)
     topFourRows  = np_board[:,start:start+7]
     print topFourRows
     vals = []
@@ -327,8 +328,9 @@ def boardToState(board, shape_num, highest = -1):
         vals.append([top_val % 2, (top_val / 2) % 2, top_val/4])
 
     shapearr = [shape_num % 2, (shape_num / 2) % 2, shape_num / 4 ]
-    final =  np.array(vals)
-    return np.append(final.flatten(), shapearr), highestRow
+    final = np.append(np.array(vals).flatten(), shapearr)
+    print len(final)
+    return final, highestRow
     
 
 # Drops piece and returns the new board, along w/ # of lines removed
