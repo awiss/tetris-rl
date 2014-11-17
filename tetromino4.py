@@ -268,7 +268,7 @@ def getPieces(board, shape_num):
             testPiece = {'shape': shape,
                 'rotation': rot,
                 'x': x,
-                'y': 0 }
+                'y': -1 }
             if isValidPosition(board, testPiece):
                 pieces.append(testPiece)
     return pieces
@@ -280,7 +280,7 @@ def intToPiece(action, shape_num):
     return {'shape': shapes[shape_num],
             'rotation': rotation,
             'x': x - 2,
-            'y': 0,
+            'y': -1,
             'color': random.randint(0, len(COLORS) - 1)}
 
 

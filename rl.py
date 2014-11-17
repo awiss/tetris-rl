@@ -14,7 +14,7 @@ table.initialize(0.)
 
 # create learner and agent
 learner = Q(.5, 0.0)
-learner._setExplorer(EpsilonGreedyExplorer(0.0))
+learner._setExplorer(EpsilonGreedyExplorer(0.2))
 agent = LearningAgent(table, learner)
 
 # create environment, task, and experiment
@@ -22,10 +22,10 @@ env = TetroEnv()
 task = TetroTask(env)
 experiment = Experiment(task, agent)
 
-
 # Train the learner
-for i in range(300):
+for i in range(10000):
     print i
     experiment.doInteractions(1)
     agent.learn()
     agent.reset()
+print "Resets:", env.num_resets
