@@ -3,7 +3,8 @@
 # http://inventwithpython.com/pygame
 # Released under a "Simplified BSD" license
 
-import random, time, pygame, sys
+import numpy as np
+import random, time, pygame, sys, copy
 from pygame.locals import *
 
 FPS = 25
@@ -154,6 +155,8 @@ PIECES = {'S': S_SHAPE_TEMPLATE,
           'O': O_SHAPE_TEMPLATE,
           'T': T_SHAPE_TEMPLATE}
 
+shapes = list(PIECES.keys())
+
 
 def main():
     global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
@@ -248,11 +251,12 @@ def runGame():
                 elif (event.key == K_DOWN or event.key == K_s):
                     movingDown = True
                     if isValidPosition(board, fallingPiece, adjY=1):
-                        fallingPiece['y'] += 1
+                       fallingPiece['y'] += 1
                     lastMoveDownTime = time.time()
 
                 # move the current piece all the way down
                 elif event.key == K_SPACE:
+                    
                     movingDown = False
                     movingLeft = False
                     movingRight = False
@@ -260,7 +264,6 @@ def runGame():
                         if not isValidPosition(board, fallingPiece, adjY=i):
                             break
                     fallingPiece['y'] += i - 1
-
         # handle moving the piece because of user input
         if (movingLeft or movingRight) and time.time() - lastMoveSidewaysTime > MOVESIDEWAYSFREQ:
             if movingLeft and isValidPosition(board, fallingPiece, adjX=-1):
@@ -270,7 +273,7 @@ def runGame():
             lastMoveSidewaysTime = time.time()
 
         if movingDown and time.time() - lastMoveDownTime > MOVEDOWNFREQ and isValidPosition(board, fallingPiece, adjY=1):
-            fallingPiece['y'] += 1
+          #  fallingPiece['y'] += 1
             lastMoveDownTime = time.time()
 
         # let the piece fall if it is time to fall
@@ -279,12 +282,14 @@ def runGame():
             if not isValidPosition(board, fallingPiece, adjY=1):
                 # falling piece has landed, set it on the board
                 addToBoard(board, fallingPiece)
+                boardToState(convertBoard(board), 6)
+                
                 score += removeCompleteLines(board)
                 level, fallFreq = calculateLevelAndFallFreq(score)
                 fallingPiece = None
             else:
                 # piece did not land, just move the piece down
-                fallingPiece['y'] += 1
+                #fallingPiece['y'] += 1
                 lastFallTime = time.time()
 
         # drawing everything on the screen
@@ -297,6 +302,68 @@ def runGame():
 
         pygame.display.update()
         FPSCLOCK.tick(FPS)
+
+# Convert the board into a 0 and 1 2D array
+def convertBoard(board):
+    new_board = []
+    for row in board:
+        new_row = []
+        for val in row:
+            if val != BLANK:
+                new_row.append(1)
+            else:
+                new_row.append(0)
+        new_board.append(new_row)
+    return new_board
+
+def boardToState(board, shape_num):
+    highestRow = BOARDHEIGHT - 1
+    for i in xrange(BOARDHEIGHT):
+        for j in xrange(BOARDWIDTH):
+            if board[j][i]:
+                highestRow = i
+                break
+        if highestRow < BOARDHEIGHT - 1:
+            break
+    start = min(highestRow, BOARDHEIGHT - 7)
+    np_board = np.array(board)
+    topFourRows  = np_board[:,start:start+7]
+    print topFourRows
+    vals = []
+    for col in topFourRows:
+        j = 7
+        for i in xrange(7):
+            if col[i]:
+                j = i
+                break
+        top_val = 7 - j
+
+        vals.append([top_val % 2, (top_val / 2) % 2, top_val/4])
+
+    shapearr = [shape_num % 2, (shape_num / 2) % 2, shape_num / 4 ]
+    final =  np.array(vals)
+    print final
+    print final.flatten()
+    print np.append(final.flatten(),shapearr)
+    return final.flatten()
+    
+
+# Drops piece and returns the new board, along w/ # of lines removed
+def addAndClearLines(board, piece):
+    for i in range(1, BOARDHEIGHT):
+        if not isValidPosition(board, piece, adjY=i):
+            break
+    piece['y'] += i - 1
+    new_board = copy.deepcopy(board)
+    for x in range(TEMPLATEWIDTH):
+        for y in range(TEMPLATEHEIGHT):
+            if PIECES[piece['shape']][piece['rotation']][y][x] != BLANK:
+                new_board[x + piece['x']][y + piece['y']] = piece['color']
+    lines_removed = removeCompleteLines(new_board)
+    return new_board, lines
+
+
+
 
 
 def makeTextObjs(text, font, color):
@@ -366,9 +433,31 @@ def getNewPiece():
     newPiece = {'shape': shape,
                 'rotation': random.randint(0, len(PIECES[shape]) - 1),
                 'x': int(BOARDWIDTH / 2) - int(TEMPLATEWIDTH / 2),
-                'y': -2, # start it above the board (i.e. less than 0)
+                'y': -1, # start it above the board (i.e. less than 0)
                 'color': random.randint(0, len(COLORS)-1)}
     return newPiece
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def addToBoard(board, piece):
