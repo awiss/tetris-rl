@@ -156,7 +156,7 @@ PIECES = {'S': S_SHAPE_TEMPLATE,
           'T': T_SHAPE_TEMPLATE}
 
 shapes = list(PIECES.keys())
-
+print shapes
 
 def main():
     global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
@@ -227,6 +227,7 @@ def runGame():
                 # moving the piece sideways
                 if (event.key == K_LEFT or event.key == K_a) and isValidPosition(board, fallingPiece, adjX=-1):
                     fallingPiece['x'] -= 1
+                    print fallingPiece['x']
                     movingLeft = True
                     movingRight = False
                     lastMoveSidewaysTime = time.time()
@@ -234,6 +235,7 @@ def runGame():
                 elif (event.key == K_RIGHT or event.key == K_d) and isValidPosition(board, fallingPiece, adjX=1):
                     fallingPiece['x'] += 1
                     movingRight = True
+                    print fallingPiece['x']
                     movingLeft = False
                     lastMoveSidewaysTime = time.time()
 
@@ -282,8 +284,8 @@ def runGame():
             if not isValidPosition(board, fallingPiece, adjY=1):
                 # falling piece has landed, set it on the board
                 addToBoard(board, fallingPiece)
-                boardToState(convertBoard(board), 6)
-                
+                boardToState(board, 6)
+                print getPieces(board, 6)
                 score += removeCompleteLines(board)
                 level, fallFreq = calculateLevelAndFallFreq(score)
                 fallingPiece = None
@@ -316,7 +318,45 @@ def convertBoard(board):
         new_board.append(new_row)
     return new_board
 
+# Given a shape num (from 0 to 6) returns all of the valid
+# piece positions and orientations
+def getPieces(board, shape_num):
+    shape = shapes[shape_num]
+    pieces = []
+    for x in xrange(-2, BOARDWIDTH):
+        for rot in xrange(len(PIECES[shape])):
+
+            testPiece = {'shape': shape,
+                'rotation': rot,
+                'x': x,
+                'y': 0 }
+            if isValidPosition(board, testPiece):
+                pieces.append(testPiece)
+    return pieces
+
+# Given an action and shape generate a piece object
+def intToPiece(action, shape_num):
+    x = action / 4
+    rotation = action % 4
+    return {'shape': shapes[shape_num],
+            'rotation': rotation,
+            'x': x - 2,
+            'y': 0}
+
+
+def actionIsValid(action, shape_num, board):
+    piece = intToPiece(action, shape_num)
+    return isValidPosition(board, piece)
+
+# Piece -> integer representing position and orientation
+def pieceToInt(piece):
+    return (piece['x'] + 2) * 4 + piece['rotation'] 
+
+
+# Take unconverted board, converts it and finds the state
+# adds 
 def boardToState(board, shape_num):
+    b_board = convertBoard(board)
     highestRow = BOARDHEIGHT - 1
     for i in xrange(BOARDHEIGHT):
         for j in xrange(BOARDWIDTH):
@@ -361,6 +401,33 @@ def addAndClearLines(board, piece):
                 new_board[x + piece['x']][y + piece['y']] = piece['color']
     lines_removed = removeCompleteLines(new_board)
     return new_board, lines
+
+
+
+def getBlankBoard():
+    # create and return a new blank board data structure
+    board = []
+    for i in range(BOARDWIDTH):
+        board.append([BLANK] * BOARDHEIGHT)
+    return board
+
+
+def isOnBoard(x, y):
+    return x >= 0 and x < BOARDWIDTH and y < BOARDHEIGHT
+
+
+def isValidPosition(board, piece, adjX=0, adjY=0):
+    # Return True if the piece is within the board and not colliding
+    for x in range(TEMPLATEWIDTH):
+        for y in range(TEMPLATEHEIGHT):
+            isAboveBoard = y + piece['y'] + adjY < 0
+            if isAboveBoard or PIECES[piece['shape']][piece['rotation']][y][x] == BLANK:
+                continue
+            if not isOnBoard(x + piece['x'] + adjX, y + piece['y'] + adjY):
+                return False
+            if board[x + piece['x'] + adjX][y + piece['y'] + adjY] != BLANK:
+                return False
+    return True
 
 
 
@@ -459,39 +526,12 @@ def getNewPiece():
 
 
 
-
 def addToBoard(board, piece):
     # fill in the board based on piece's location, shape, and rotation
     for x in range(TEMPLATEWIDTH):
         for y in range(TEMPLATEHEIGHT):
             if PIECES[piece['shape']][piece['rotation']][y][x] != BLANK:
                 board[x + piece['x']][y + piece['y']] = piece['color']
-
-
-def getBlankBoard():
-    # create and return a new blank board data structure
-    board = []
-    for i in range(BOARDWIDTH):
-        board.append([BLANK] * BOARDHEIGHT)
-    return board
-
-
-def isOnBoard(x, y):
-    return x >= 0 and x < BOARDWIDTH and y < BOARDHEIGHT
-
-
-def isValidPosition(board, piece, adjX=0, adjY=0):
-    # Return True if the piece is within the board and not colliding
-    for x in range(TEMPLATEWIDTH):
-        for y in range(TEMPLATEHEIGHT):
-            isAboveBoard = y + piece['y'] + adjY < 0
-            if isAboveBoard or PIECES[piece['shape']][piece['rotation']][y][x] == BLANK:
-                continue
-            if not isOnBoard(x + piece['x'] + adjX, y + piece['y'] + adjY):
-                return False
-            if board[x + piece['x'] + adjX][y + piece['y'] + adjY] != BLANK:
-                return False
-    return True
 
 def isCompleteLine(board, y):
     # Return True if the line filled with boxes with no gaps.
