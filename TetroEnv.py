@@ -11,19 +11,26 @@ class TeteroEnv(Environment):
         self.board = getBlankBoard()
         self.pieces = [0, 1, 2, 3, 4, 5, 6]
         self.piece = random.choice(self.pieces)
+        self.ActionValid = True
 
     def getSensors(self):
         return boardToState(self.board, piece)
 
-    def performAction(self, action):
+    def getActionValid():
+        return self.ActionValid
 
-        [self.board, lines] = addAndClearLines(self.board, self.piece)
-        if len(self.pieces) == 1:
-            self.piece = self.pieces[0]
-            self.pieces = [0, 1, 2, 3, 4, 5, 6]
+    def performAction(self, action):
+        if actionIsValid(self.board, self.piece, action):
+            self.ActionValid = True
+            [self.board, lines] = addAndClearLines(self.board, self.piece)
+            if len(self.pieces) == 1:
+                self.piece = self.pieces[0]
+                self.pieces = [0, 1, 2, 3, 4, 5, 6]
+            else:
+                self.piece = random.choice(self.pieces)
+                self.pieces.remove(self.piece)
         else:
-            self.piece = random.choice(self.pieces)
-            self.pieces.remove(self.piece)
+            self.ActionValid = False
 
     def reset(self):
         self.board = getBlankBoard()
