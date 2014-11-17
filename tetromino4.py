@@ -196,8 +196,8 @@ def runGame():
 
     while True: # game loop
             # No falling piece in play, so start a new piece at the top
-        action = getAction(boardToState(board, fallingPiece)
-        actualPiece = pieceFromInt( 
+        action = getAction(boardToState(board, fallingPiece))
+        aidctualPiece = pieceFromInt(action, fallingPiece) 
         score += addAndClearLines(board, fallingPiece)
         level, fallFreq = calculateLevelAndFallFreq(score)
         fallingPiece = nextPiece
