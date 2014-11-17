@@ -195,14 +195,15 @@ def runGame():
     nextPiece = getNewPiece()
 
     while True: # game loop
-        if fallingPiece == None:
             # No falling piece in play, so start a new piece at the top
-            fallingPiece = nextPiece
-            nextPiece = getNewPiece()
-            lastFallTime = time.time() # reset lastFallTime
-
-            if not isValidPosition(board, fallingPiece):
-                return # can't fit a new piece on the board, so game over
+        action = getAction(boardToState(board, fallingPiece)
+        actualPiece = pieceFromInt( 
+        score += addAndClearLines(board, fallingPiece)
+        level, fallFreq = calculateLevelAndFallFreq(score)
+        fallingPiece = nextPiece
+        nextPiece = getNewPiece()
+        if not isValidPosition(board, fallingPiece):
+            return # can't fit a new piece on the board, so game over
 
         checkForQuit()
         for event in pygame.event.get(): # event handling loop
@@ -223,72 +224,8 @@ def runGame():
                 elif (event.key == K_DOWN or event.key == K_s):
                     movingDown = False
 
-            elif event.type == KEYDOWN:
-                # moving the piece sideways
-                if (event.key == K_LEFT or event.key == K_a) and isValidPosition(board, fallingPiece, adjX=-1):
-                    fallingPiece['x'] -= 1
-                    print fallingPiece['x']
-                    movingLeft = True
-                    movingRight = False
-                    lastMoveSidewaysTime = time.time()
+       # handle moving the piece because of user input
 
-                elif (event.key == K_RIGHT or event.key == K_d) and isValidPosition(board, fallingPiece, adjX=1):
-                    fallingPiece['x'] += 1
-                    movingRight = True
-                    print fallingPiece['x']
-                    movingLeft = False
-                    lastMoveSidewaysTime = time.time()
-
-                # rotating the piece (if there is room to rotate)
-                elif (event.key == K_UP or event.key == K_w):
-                    fallingPiece['rotation'] = (fallingPiece['rotation'] + 1) % len(PIECES[fallingPiece['shape']])
-                    if not isValidPosition(board, fallingPiece):
-                        fallingPiece['rotation'] = (fallingPiece['rotation'] - 1) % len(PIECES[fallingPiece['shape']])
-                elif (event.key == K_q): # rotate the other direction
-                    fallingPiece['rotation'] = (fallingPiece['rotation'] - 1) % len(PIECES[fallingPiece['shape']])
-                    if not isValidPosition(board, fallingPiece):
-                        fallingPiece['rotation'] = (fallingPiece['rotation'] + 1) % len(PIECES[fallingPiece['shape']])
-
-                # making the piece fall faster with the down key
-                elif (event.key == K_DOWN or event.key == K_s):
-                    movingDown = True
-                    if isValidPosition(board, fallingPiece, adjY=1):
-                       fallingPiece['y'] += 1
-                    lastMoveDownTime = time.time()
-
-                # move the current piece all the way down
-                elif event.key == K_SPACE:
-                    
-                    movingDown = False
-                    movingLeft = False
-                    movingRight = False
-                    for i in range(1, BOARDHEIGHT):
-                        if not isValidPosition(board, fallingPiece, adjY=i):
-                            break
-                    fallingPiece['y'] += i - 1
-        # handle moving the piece because of user input
-        if (movingLeft or movingRight) and time.time() - lastMoveSidewaysTime > MOVESIDEWAYSFREQ:
-            if movingLeft and isValidPosition(board, fallingPiece, adjX=-1):
-                fallingPiece['x'] -= 1
-            elif movingRight and isValidPosition(board, fallingPiece, adjX=1):
-                fallingPiece['x'] += 1
-            lastMoveSidewaysTime = time.time()
-
-        if movingDown and time.time() - lastMoveDownTime > MOVEDOWNFREQ and isValidPosition(board, fallingPiece, adjY=1):
-          #  fallingPiece['y'] += 1
-            lastMoveDownTime = time.time()
-
-        # let the piece fall if it is time to fall
-        if time.time() - lastFallTime > fallFreq:
-            # see if the piece has landed
-            if not isValidPosition(board, fallingPiece, adjY=1):
-                # falling piece has landed, set it on the board
-                addToBoard(board, fallingPiece)
-                boardToState(board, 6)
-                print getPieces(board, 6)
-                score += removeCompleteLines(board)
-                level, fallFreq = calculateLevelAndFallFreq(score)
-                fallingPiece = None
             else:
                 # piece did not land, just move the piece down
                 #fallingPiece['y'] += 1
@@ -304,6 +241,9 @@ def runGame():
 
         pygame.display.update()
         FPSCLOCK.tick(FPS)
+
+def getAction(state):
+    return 8
 
 # Convert the board into a 0 and 1 2D array
 def convertBoard(board):
@@ -343,6 +283,9 @@ def intToPiece(action, shape_num):
             'x': x - 2,
             'y': 0}
 
+def intToColorPiece(action, shape_num):
+    piece = intToPiece(action, shape_num)
+    piece['color'] = random.randint(0, len(COLORS)-1)
 
 def actionIsValid(action, shape_num, board):
     piece = intToPiece(action, shape_num)
@@ -355,17 +298,20 @@ def pieceToInt(piece):
 
 # Take unconverted board, converts it and finds the state
 # adds 
-def boardToState(board, shape_num):
+def boardToState(board, shape_num, highest = -1):
     b_board = convertBoard(board)
-    highestRow = BOARDHEIGHT - 1
-    for i in xrange(BOARDHEIGHT):
-        for j in xrange(BOARDWIDTH):
-            if board[j][i]:
-                highestRow = i
+    if highest > -1:
+        highestRow = highest
+    else:
+        highestRow = BOARDHEIGHT - 1
+        for i in xrange(BOARDHEIGHT):
+            for j in xrange(BOARDWIDTH):
+                if board[j][i]:
+                    highestRow = i
+                    break
+            if highestRow < BOARDHEIGHT - 1:
                 break
-        if highestRow < BOARDHEIGHT - 1:
-            break
-    start = min(highestRow, BOARDHEIGHT - 7)
+    start = min(highestRow-1, BOARDHEIGHT - 7)
     np_board = np.array(board)
     topFourRows  = np_board[:,start:start+7]
     print topFourRows
@@ -382,10 +328,7 @@ def boardToState(board, shape_num):
 
     shapearr = [shape_num % 2, (shape_num / 2) % 2, shape_num / 4 ]
     final =  np.array(vals)
-    print final
-    print final.flatten()
-    print np.append(final.flatten(),shapearr)
-    return final.flatten()
+    return np.append(final.flatten(), shapearr), highestRow
     
 
 # Drops piece and returns the new board, along w/ # of lines removed
@@ -394,13 +337,12 @@ def addAndClearLines(board, piece):
         if not isValidPosition(board, piece, adjY=i):
             break
     piece['y'] += i - 1
-    new_board = copy.deepcopy(board)
     for x in range(TEMPLATEWIDTH):
         for y in range(TEMPLATEHEIGHT):
             if PIECES[piece['shape']][piece['rotation']][y][x] != BLANK:
-                new_board[x + piece['x']][y + piece['y']] = piece['color']
-    lines_removed = removeCompleteLines(new_board)
-    return new_board, lines
+                board[x + piece['x']][y + piece['y']] = piece['color']
+    lines_removed = removeCompleteLines(board)
+    return lines_removed
 
 
 
@@ -494,15 +436,15 @@ def calculateLevelAndFallFreq(score):
     fallFreq = 0.27 - (level * 0.02)
     return level, fallFreq
 
+shapes_left = range(7)
 def getNewPiece():
+    if len(shapes_left) == 0:
+        shapes_left = range(7)
     # return a random new piece in a random rotation and color
-    shape = random.choice(list(PIECES.keys()))
-    newPiece = {'shape': shape,
-                'rotation': random.randint(0, len(PIECES[shape]) - 1),
-                'x': int(BOARDWIDTH / 2) - int(TEMPLATEWIDTH / 2),
-                'y': -1, # start it above the board (i.e. less than 0)
-                'color': random.randint(0, len(COLORS)-1)}
-    return newPiece
+    shape = random.choice(shapes_left)
+    shapes_left.remove(shape)
+    
+    return shape
 
 
 
