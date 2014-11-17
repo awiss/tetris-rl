@@ -156,7 +156,6 @@ PIECES = {'S': S_SHAPE_TEMPLATE,
           'T': T_SHAPE_TEMPLATE}
 
 shapes = list(PIECES.keys())
-print shapes
 
 def main():
     global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
@@ -281,7 +280,9 @@ def intToPiece(action, shape_num):
     return {'shape': shapes[shape_num],
             'rotation': rotation,
             'x': x - 2,
-            'y': 0}
+            'y': 0,
+            'color': random.randint(0, len(COLORS) - 1)}
+
 
 def intToColorPiece(action, shape_num):
     piece = intToPiece(action, shape_num)
@@ -311,11 +312,9 @@ def boardToState(board, shape_num, highest = -1):
                     break
             if highestRow < BOARDHEIGHT - 1:
                 break
-    print b_board
-    start = min(highestRow-1, BOARDHEIGHT - 7)
+    start = max(min(highestRow-1, BOARDHEIGHT - 7),0)
     np_board = np.array(b_board)
     topFourRows  = np_board[:,start:start+7]
-    print topFourRows
     vals = []
     for col in topFourRows:
         j = 7
@@ -329,12 +328,12 @@ def boardToState(board, shape_num, highest = -1):
 
     shapearr = [shape_num % 2, (shape_num / 2) % 2, shape_num / 4 ]
     final = np.append(np.array(vals).flatten(), shapearr)
-    print len(final)
     return final, highestRow
     
 
 # Drops piece and returns the new board, along w/ # of lines removed
-def addAndClearLines(board, piece):
+def addAndClearLines(board, action, shape_num):
+    piece = intToPiece(action, shape_num)
     for i in range(1, BOARDHEIGHT):
         if not isValidPosition(board, piece, adjY=i):
             break
@@ -362,6 +361,8 @@ def isOnBoard(x, y):
 
 def isValidPosition(board, piece, adjX=0, adjY=0):
     # Return True if the piece is within the board and not colliding
+    if piece['rotation'] >= len(PIECES[piece['shape']]):
+        return False
     for x in range(TEMPLATEWIDTH):
         for y in range(TEMPLATEHEIGHT):
             isAboveBoard = y + piece['y'] + adjY < 0
