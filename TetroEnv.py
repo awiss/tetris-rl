@@ -1,7 +1,10 @@
 from pybrain.rl.environments.environment import Environment
 from tetromino4 import *
 import random
+from TetroTask import arrayToObs
 import numpy as np
+
+
 class TetroEnv(Environment):
     # number of actions
     indim = 15
@@ -14,18 +17,17 @@ class TetroEnv(Environment):
         self.piece = random.choice(self.pieces)
         self.ActionValid = True
         self.highestRow = None
+        self.rewardData = None
         self.num_resets = 0
+        self.totallines = 0
+        self.score = 0
+        self.curr_learning = True
+        self.ended = False
 
     def getSensors(self):
 
         bin_state_arr, highestRow = boardToState(self.board, self.piece)
-        print "highest", highestRow
-        if highestRow <= 2:
-            self.reset()
-            bin_state_arr, highestRow = boardToState(self.board, self.piece)
-        convstate = sum(np.array(bin_state_arr)*np.array([0, 1, 2, 2**2, 2**4,
-                        2**5, 2**6, 2**7, 2**8, 2**9, 2**10, 2**11, 2**12,
-                        2**13, 2**14]))
+        convstate = arrayToObs(bin_state_arr)
         self.highestRow = highestRow
         return [int(convstate)], highestRow
 
@@ -36,25 +38,39 @@ class TetroEnv(Environment):
     def getActionValid(self):
         return self.ActionValid
 
+    def setLearning(self, flag):
+        self.curr_learning = flag
+
     def getHighestRow(self):
         return self.highestRow
 
     def performAction(self, action):
+        self.ended = False
         action = int(action[0])
-        print "action", action
-        if actionIsValid(action, self.piece, self.board):
-            self.ActionValid = True
-            lines = addAndClearLines(self.board, action, self.piece)
-            if len(self.pieces) == 1:
-                self.piece = self.pieces[0]
-                self.pieces = [0, 1, 2, 3, 4, 5, 6]
-            else:
-                self.piece = random.choice(self.pieces)
-                self.pieces.remove(self.piece)
+        #print "action", action
+        while not actionIsValid(action, self.piece, self.board):
+            action = (action + 1) % 16
+
+        highestRow = getHighestRow(self.board)
+        self.score += addAndClearLines(self.board, action, self.piece)
+        if len(self.pieces) == 1:
+            self.piece = self.pieces[0]
+            self.pieces = [0, 1, 2, 3, 4, 5, 6]
         else:
-            self.ActionValid = False
+            self.piece = random.choice(self.pieces)
+            self.pieces.remove(self.piece)
+        self.rewardData, _ = boardToState(self.board, self.piece, highestRow)
+        new_highestRow = getHighestRow(self.board)
+        if new_highestRow <= 2:
+            self.ended = True
+            self.reset()
+
+        if not self.curr_learning:
+            rlAction(self.board, self.piece, self.score)
 
     def reset(self):
+        self.totallines += self.score
+        self.score = 0
         self.num_resets += 1
         self.board = getBlankBoard()
         self.pieces = [0, 1, 2, 3, 4, 5, 6]

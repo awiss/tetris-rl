@@ -155,54 +155,41 @@ PIECES = {'S': S_SHAPE_TEMPLATE,
           'O': O_SHAPE_TEMPLATE,
           'T': T_SHAPE_TEMPLATE}
 
-shapes = list(PIECES.keys())
+shapes = ['I', 'J', 'L', 'O', 'S', 'T', 'Z']
 
 def main():
     global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
+    print "main"
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     BASICFONT = pygame.font.Font('freesansbold.ttf', 18)
     BIGFONT = pygame.font.Font('freesansbold.ttf', 100)
     pygame.display.set_caption('Tetromino')
-
-    showTextScreen('Tetromino')
-    while True: # game loop
-        # if random.randint(0, 1) == 0:
-        #     pygame.mixer.music.load('tetrisb.mid')
-        # else:
-        #     pygame.mixer.music.load('tetrisc.mid')
-        # pygame.mixer.music.play(-1, 0.0)
-        runGame()
-        # pygame.mixer.music.stop()
-        showTextScreen('Game Over')
+    board = getBlankBoard()
+    score = 0
+    level = 0
 
 
+
+def getBlankBoard():
+    # create and return a new blank board data structure
+    board = []
+    for i in range(BOARDWIDTH):
+        board.append([BLANK] * BOARDHEIGHT)
+    return board
+
+
+
+board = getBlankBoard()
+score = 0
+level = 0
+nextPiece = None
 def runGame():
     # setup variables for the start of the game
-    board = getBlankBoard()
-    lastMoveDownTime = time.time()
-    lastMoveSidewaysTime = time.time()
-    lastFallTime = time.time()
-    movingDown = False # note: there is no movingUp variable
-    movingLeft = False
-    movingRight = False
-    score = 0
-    level, fallFreq = calculateLevelAndFallFreq(score)
 
-    fallingPiece = getNewPiece()
-    nextPiece = getNewPiece()
 
     while True: # game loop
-            # No falling piece in play, so start a new piece at the top
-        action = getAction(boardToState(board, fallingPiece))
-        aidctualPiece = pieceFromInt(action, fallingPiece) 
-        score += addAndClearLines(board, fallingPiece)
-        level, fallFreq = calculateLevelAndFallFreq(score)
-        fallingPiece = nextPiece
-        nextPiece = getNewPiece()
-        if not isValidPosition(board, fallingPiece):
-            return # can't fit a new piece on the board, so game over
 
         checkForQuit()
         for event in pygame.event.get(): # event handling loop
@@ -216,30 +203,29 @@ def runGame():
                     lastFallTime = time.time()
                     lastMoveDownTime = time.time()
                     lastMoveSidewaysTime = time.time()
-                elif (event.key == K_LEFT or event.key == K_a):
-                    movingLeft = False
-                elif (event.key == K_RIGHT or event.key == K_d):
-                    movingRight = False
-                elif (event.key == K_DOWN or event.key == K_s):
-                    movingDown = False
 
        # handle moving the piece because of user input
-
-            else:
-                # piece did not land, just move the piece down
-                #fallingPiece['y'] += 1
-                lastFallTime = time.time()
 
         # drawing everything on the screen
         DISPLAYSURF.fill(BGCOLOR)
         drawBoard(board)
         drawStatus(score, level)
-        drawNextPiece(nextPiece)
-        if fallingPiece != None:
-            drawPiece(fallingPiece)
-
+        if (nextPiece is not None):
+            drawNextPiece(nextPiece)
         pygame.display.update()
         FPSCLOCK.tick(FPS)
+
+# Display actions performed by RL learner
+def rlAction(new_board, next_piece_num, curr_score):
+    board = new_board
+    nextPiece = intToPiece(1,next_piece_num)
+    DISPLAYSURF.fill(BGCOLOR)
+    drawBoard(board)
+    drawStatus(curr_score, 0)
+    if (nextPiece is not None):
+        drawNextPiece(nextPiece)
+    pygame.display.update()
+
 
 def getAction(state):
     return 8
@@ -273,18 +259,40 @@ def getPieces(board, shape_num):
                 pieces.append(testPiece)
     return pieces
 
+
+random_action_mapping = {
+        0 : 5,
+        1 : 8,
+        2 : 3,
+        3 : 9,
+        4 : 15,
+        5 : 14,
+        6 : 1,
+        7 : 10,
+        8 : 2,
+        9 : 12,
+        10 : 4,
+        11 : 6,
+        12 : 13,
+        13 : 7,
+        14 : 0,
+        15 : 11
+}
+
 # Given an action and shape generate a piece object
-def intToPiece(action, shape_num):
-    x = action / 4
+def intToPiece(raw_action, shape_num):
+    action = random_action_mapping[raw_action]
+    x = (action / 4) - 2
     rotation = action % 4
     return {'shape': shapes[shape_num],
             'rotation': rotation,
-            'x': x - 2,
+            'x': x,
             'y': -1,
             'color': random.randint(0, len(COLORS) - 1)}
 
 
-def intToColorPiece(action, shape_num):
+def intToColorPiece(raw_action, shape_num):
+    action = random_action_mapping[raw_action]
     piece = intToPiece(action, shape_num)
     piece['color'] = random.randint(0, len(COLORS)-1)
 
@@ -293,8 +301,18 @@ def actionIsValid(action, shape_num, board):
     return isValidPosition(board, piece)
 
 # Piece -> integer representing position and orientation
-def pieceToInt(piece):
-    return (piece['x'] + 2) * 4 + piece['rotation'] 
+
+
+def getHighestRow(board):
+    highestRow = BOARDHEIGHT - 1
+    for i in xrange(BOARDHEIGHT):
+        for j in xrange(BOARDWIDTH):
+            if board[j][i] is not BLANK:
+                highestRow = i
+                break
+        if highestRow < BOARDHEIGHT - 1:
+            break
+    return highestRow
 
 
 # Take unconverted board, converts it and finds the state
@@ -319,7 +337,7 @@ def boardToState(board, shape_num, highest = -1):
     for col in topFourRows:
         j = 7
         for i in xrange(7):
-            if col[i]:
+            if col[i]: 
                 j = i
                 break
         top_val = 7 - j
@@ -344,15 +362,6 @@ def addAndClearLines(board, action, shape_num):
                 board[x + piece['x']][y + piece['y']] = piece['color']
     lines_removed = removeCompleteLines(board)
     return lines_removed
-
-
-
-def getBlankBoard():
-    # create and return a new blank board data structure
-    board = []
-    for i in range(BOARDWIDTH):
-        board.append([BLANK] * BOARDHEIGHT)
-    return board
 
 
 def isOnBoard(x, y):
