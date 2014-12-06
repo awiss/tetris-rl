@@ -29,7 +29,7 @@ env = TetroEnv()
 task = TetroTask(env)
 experiment = Experiment(task, agent)
 # Train the learner
-num_iter = 1000000
+num_iter = 10000
 for i in range(num_iter):
     if i % (num_iter/100) == 0:
         stdout.write("\rTraining %d%% complete" % (i * 100 / num_iter))
@@ -45,16 +45,21 @@ env.setLearning(False)
 env.reset()
 
 display = False
-if int(sys.argv[1]):
-    env.setDisplay(False)
-    tetromino4.main()
+main = False
+
 print epsilon
 while True:
-    foo = raw_input('Agent is done training. Press any key to test...')
+    foo = raw_input('Agent is done training. Enter to test, d then enter to display')
+    if foo == "d":
+        if main == False:
+            tetromino4.main()
+            env.setDisplay(True)
+            main = True
+
     env.totallines = 0
     num_iter = 10000
     for i in range(num_iter):
-        if int(sys.argv[1]):
+        if main:
             time.sleep(2)
         experiment.doInteractions(1)
         agent.reset()

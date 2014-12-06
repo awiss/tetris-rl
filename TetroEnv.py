@@ -46,7 +46,7 @@ class TetroEnv(Environment):
         return self.highestRow
     
     def setDisplay(self, disp):
-        self.display = False
+        self.display = disp
 
     def performAction(self, action):
         self.ended = False

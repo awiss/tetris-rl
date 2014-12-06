@@ -160,7 +160,6 @@ shapes = ['I', 'J', 'L', 'O', 'S', 'T', 'Z']
 main = False
 def main():
     global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
-    print "main"
     pygame.init()
     main = True
     FPSCLOCK = pygame.time.Clock()
@@ -219,7 +218,6 @@ def runGame():
 
 # Display actions performed by RL learner
 def rlAction(new_board, next_piece_num, curr_score):
-    print "rl_action"
     board = new_board
     nextPiece = intToPiece(1,next_piece_num)
     DISPLAYSURF.fill(BGCOLOR)
