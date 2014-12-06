@@ -8,7 +8,7 @@ import sys
 from sys import stdout
 from pybrain.rl.learners.valuebased import ActionValueTable
 from pybrain.rl.agents import LearningAgent
-from pybrain.rl.learners import Q
+from pybrain.rl.learners import SARSA
 from pybrain.rl.experiments import Experiment
 from pybrain.rl.explorers import EpsilonGreedyExplorer
 
@@ -19,7 +19,7 @@ table = ActionValueTable(2**15, 15)
 table.initialize(0.)
 print sys.argv
 # create learner and agent
-learner = Q(.3, 0.0)
+learner = SARSA(.3, 0.0)
 epsilon = .3
 learner._setExplorer(EpsilonGreedyExplorer(epsilon))
 agent = LearningAgent(table, learner)
