@@ -21,6 +21,7 @@ class TetroEnv(Environment):
         self.num_resets = 0
         self.totallines = 0
         self.score = 0
+        self.display = False
         self.curr_learning = True
         self.ended = False
 
@@ -43,6 +44,9 @@ class TetroEnv(Environment):
 
     def getHighestRow(self):
         return self.highestRow
+    
+    def setDisplay(self, disp):
+        self.display = False
 
     def performAction(self, action):
         self.ended = False
@@ -52,7 +56,7 @@ class TetroEnv(Environment):
             action = (action + 1) % 16
 
         highestRow = getHighestRow(self.board)
-        self.score += addAndClearLines(self.board, action, self.piece)
+        self.score += addAndClearLines(self.board, action, self.piece, self.curr_learning)
         if len(self.pieces) == 1:
             self.piece = self.pieces[0]
             self.pieces = [0, 1, 2, 3, 4, 5, 6]
@@ -65,7 +69,7 @@ class TetroEnv(Environment):
             self.ended = True
             self.reset()
 
-        if not self.curr_learning:
+        if self.display:
             rlAction(self.board, self.piece, self.score)
 
     def reset(self):

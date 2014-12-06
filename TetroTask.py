@@ -7,7 +7,7 @@ class TetroTask(Task):
     def __init__(self, environment):
         self.env = environment
         self.lastreward = 0
-        
+        self.last_val = 0 
         self.oldstate = None
         self.newstate = None
         rewards = np.array([0,1,2,3,4,5,6]).reshape(7,1)*np.ones((7,4))
@@ -27,9 +27,14 @@ class TetroTask(Task):
         rewardData = self.env.rewardData
         new = np.array(rewardData[0:-3]).reshape(4, 3)
         old = (old * np.matrix([1, 2, 4]).reshape(3, 1)).A1
+       # print "Old is ", old
+       # print "Val is ", sum([val**2 for val in old])
+       # print self.last_val
         new = (new * np.matrix([1, 2, 4]).reshape(3, 1)).A1
+       # print "New is ", new
+       # print "New Val is ", sum([val**2 for val in new]);
         reward = 10 - sum([val**2 for val in new]) + sum([val**2 for val in old])
-
+        self.last_val = sum([val**2 for val in new]);
         cur_reward = self.lastreward
         self.lastreward = reward
         return cur_reward

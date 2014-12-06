@@ -157,12 +157,10 @@ PIECES = {'S': S_SHAPE_TEMPLATE,
 
 shapes = ['I', 'J', 'L', 'O', 'S', 'T', 'Z']
 
-main = False
 def main():
     global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
     print "main"
     pygame.init()
-    main = True
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     BASICFONT = pygame.font.Font('freesansbold.ttf', 18)
@@ -219,7 +217,6 @@ def runGame():
 
 # Display actions performed by RL learner
 def rlAction(new_board, next_piece_num, curr_score):
-    print "rl_action"
     board = new_board
     nextPiece = intToPiece(1,next_piece_num)
     DISPLAYSURF.fill(BGCOLOR)
@@ -291,13 +288,13 @@ def intToPiece(raw_action, shape_num):
             'rotation': rotation,
             'x': x,
             'y': -1,
-            'color': random.randint(0, len(COLORS) - 1)}
+            'color': 0}
 
 
 def intToColorPiece(raw_action, shape_num):
     action = random_action_mapping[raw_action]
     piece = intToPiece(action, shape_num)
-    piece['color'] = random.randint(0, len(COLORS)-1)
+    piece['color'] = 0
 
 def actionIsValid(action, shape_num, board):
     piece = intToPiece(action, shape_num)
@@ -353,8 +350,7 @@ def boardToState(board, shape_num, highest = -1):
     
 
 # Drops piece and returns the new board, along w/ # of lines removed
-def addAndClearLines(board, action, shape_num, learning):
-    lines_removed = 0
+def addAndClearLines(board, action, shape_num):
     piece = intToPiece(action, shape_num)
     for i in range(1, BOARDHEIGHT):
         if not isValidPosition(board, piece, adjY=i):
@@ -364,9 +360,7 @@ def addAndClearLines(board, action, shape_num, learning):
         for y in range(TEMPLATEHEIGHT):
             if PIECES[piece['shape']][piece['rotation']][y][x] != BLANK:
                 board[x + piece['x']][y + piece['y']] = piece['color']
-    if not learning:
-
-        lines_removed = removeCompleteLines(board)
+    lines_removed = removeCompleteLines(board)
     return lines_removed
 
 
