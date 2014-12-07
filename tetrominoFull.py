@@ -173,6 +173,7 @@ def main():
 
 
 
+
 def getBlankBoard():
     # create and return a new blank board data structure
     board = []
@@ -479,7 +480,7 @@ def removeCompleteLines(board):
             # complete, it will be removed.
         else:
             y -= 1 # move on to check next row up
-    return numLinesRemoved
+    return numLinesRemoved, board
 
 
 def convertToPixelCoords(boxx, boxy):
