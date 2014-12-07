@@ -170,6 +170,24 @@ def main():
     board = getBlankBoard()
     score = 0
     level = 0
+random_action_mapping = {
+        0 : 5,
+        1 : 8,
+        2 : 3,
+        3 : 9,
+        4 : 15,
+        5 : 14,
+        6 : 1,
+        7 : 10,
+        8 : 2,
+        9 : 12,
+        10 : 4,
+        11 : 6,
+        12 : 13,
+        13 : 7,
+        14 : 0,
+        15 : 11
+}
 
 
 
@@ -179,42 +197,6 @@ def getBlankBoard():
     for i in range(BOARDWIDTH):
         board.append([BLANK] * BOARDHEIGHT)
     return board
-
-
-
-board = getBlankBoard()
-score = 0
-level = 0
-nextPiece = None
-def runGame():
-    # setup variables for the start of the game
-
-
-    while True: # game loop
-
-        checkForQuit()
-        for event in pygame.event.get(): # event handling loop
-            if event.type == KEYUP:
-                if (event.key == K_p):
-                    # Pausing the game
-                    DISPLAYSURF.fill(BGCOLOR)
-                    pygame.mixer.music.stop()
-                    showTextScreen('Paused') # pause until a key press
-                    pygame.mixer.music.play(-1, 0.0)
-                    lastFallTime = time.time()
-                    lastMoveDownTime = time.time()
-                    lastMoveSidewaysTime = time.time()
-
-       # handle moving the piece because of user input
-
-        # drawing everything on the screen
-        DISPLAYSURF.fill(BGCOLOR)
-        drawBoard(board)
-        drawStatus(score, level)
-        if (nextPiece is not None):
-            drawNextPiece(nextPiece)
-        pygame.display.update()
-        FPSCLOCK.tick(FPS)
 
 # Display actions performed by RL learner
 def rlAction(new_board, next_piece_num, curr_score):
@@ -226,10 +208,6 @@ def rlAction(new_board, next_piece_num, curr_score):
     if (nextPiece is not None):
         drawNextPiece(nextPiece)
     pygame.display.update()
-
-
-def getAction(state):
-    return 8
 
 # Convert the board into a 0 and 1 2D array
 def convertBoard(board):
@@ -259,26 +237,6 @@ def getPieces(board, shape_num):
             if isValidPosition(board, testPiece):
                 pieces.append(testPiece)
     return pieces
-
-
-random_action_mapping = {
-        0 : 5,
-        1 : 8,
-        2 : 3,
-        3 : 9,
-        4 : 15,
-        5 : 14,
-        6 : 1,
-        7 : 10,
-        8 : 2,
-        9 : 12,
-        10 : 4,
-        11 : 6,
-        12 : 13,
-        13 : 7,
-        14 : 0,
-        15 : 11
-}
 
 # Given an action and shape generate a piece object
 def intToPiece(raw_action, shape_num):
