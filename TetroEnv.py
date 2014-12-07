@@ -14,7 +14,7 @@ class TetroEnv(Environment):
     def __init__(self):
         self.board = getBlankBoard()
         self.pieces = [0, 1, 2, 3, 4, 5, 6]
-        self.piece = random.choice(self.pieces)
+        self.piece = 0
         self.ActionValid = True
         self.highestRow = None
         self.rewardData = None
@@ -24,6 +24,7 @@ class TetroEnv(Environment):
         self.display = False
         self.curr_learning = True
         self.ended = False
+        self.getNewPiece()
 
     def getSensors(self):
 
@@ -57,12 +58,7 @@ class TetroEnv(Environment):
 
         highestRow = getHighestRow(self.board)
         self.score += addAndClearLines(self.board, action, self.piece, self.curr_learning)
-        if len(self.pieces) == 1:
-            self.piece = self.pieces[0]
-            self.pieces = [0, 1, 2, 3, 4, 5, 6]
-        else:
-            self.piece = random.choice(self.pieces)
-            self.pieces.remove(self.piece)
+        self.getNewPiece()
         self.rewardData, _ = boardToState(self.board, self.piece, highestRow)
         new_highestRow = getHighestRow(self.board)
         if new_highestRow <= 2:
@@ -72,10 +68,20 @@ class TetroEnv(Environment):
         if self.display:
             rlAction(self.board, self.piece, self.score)
 
+    def getNewPiece(self):
+
+        if len(self.pieces) == 1:
+            self.piece_piece = self.pieces[0]
+            self.pieces = [0, 1, 2, 3, 4, 5, 6]
+        else:
+            self.piece = random.choice(self.pieces)
+            self.pieces.remove(self.piece)
+
+
     def reset(self):
         self.totallines += self.score
         self.score = 0
         self.num_resets += 1
         self.board = getBlankBoard()
         self.pieces = [0, 1, 2, 3, 4, 5, 6]
-        self.piece = random.choice(self.pieces)
+        self.getNewPiece()

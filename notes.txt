@@ -1,0 +1,4 @@
+Final Version of Q-learner:
+Average 7,057 lines cleared per 10,000 blocks.
+Learning Rate is .3, Gamma is 0, Epsilon is .5
+
