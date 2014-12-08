@@ -19,13 +19,13 @@ import copy
 # Initialize state space
 table = ActionValueTable(2**15, 15)
 table.initialize(0.)
-print sys.argv
+# print sys.argv
 # create learner and agent
 learner = Q(.3, 0.0)
 epsilon = .3
 learner._setExplorer(EpsilonGreedyExplorer(epsilon))
 agent = LearningAgent(table, learner)
-print epsilon
+# print epsilon
 # create environment, task, and experiment
 env = TetroEnv(tetromino4.getBlankBoard())
 task = TetroTask(env)
@@ -36,7 +36,7 @@ for i in range(num_iter):
     if i % (num_iter/100) == 0:
         stdout.write("\rTraining %d%% complete" % (i * 100 / num_iter))
         stdout.flush()
- 
+
     experiment.doInteractions(1)
     agent.learn()
     agent.reset()
@@ -52,14 +52,16 @@ main = False
 print epsilon
 
 while True:
-    foo = raw_input('Agent is done training. Enter to test, d then enter to display')
+    foo = raw_input('Agent is done training.\nPress ENTER to test. Insert X and press enter to close.\n')
 
     # New external game code
-    if foo == "d":
-        if main == False:
-            tetrominoFull.main()
-            display = True
-            main = True
+    if foo is "X":
+        print '\n\nExiting...'
+        sys.exit(0)
+    if main is False:
+        tetrominoFull.main()
+        display = True
+        main = True
 
     # gets full sized blank board
     board = tetrominoFull.getBlankBoard()
@@ -78,8 +80,7 @@ while True:
     num_iter = 10000
     for i in range(num_iter):
         if main:
-            time.sleep(2)
-
+            time.sleep(.5)
 
         currReward = -10000
 # sets the current slice to a blank board
@@ -97,7 +98,7 @@ while True:
         #     print tetromino4.boardToState(boardSlices[i], i)
         noTocar = copy.deepcopy(boardSlices)
 
-        print 'div'
+        # print 'div'
 
         # for i in range(7):
         #     envi = TetroEnv(boardSlices[iters])
@@ -125,18 +126,17 @@ while True:
                 currReward = task.getReward()
                 slyceNum = iters
                 newSlice = copy.deepcopy(envi.board)
-                newscore = envi.score
+                ended = envi.ended
             agent.reset()
             iters += 1
-        # updates the score and large board
-        score += newscore
+        # updates the large board
         # boardSlices[slyceNum] = newSlice
-        for i in range(4):
-            board[i + slyceNum] = copy.deepcopy(newSlice[i])
+        for j in range(4):
+            board[j + slyceNum] = copy.deepcopy(newSlice[j])
         cnt = 0
         for slyce in boardSlices:
-            for i in range(4):
-                boardSlices[cnt][i] = copy.deepcopy(board[i + cnt])
+            for k in range(4):
+                boardSlices[cnt][k] = copy.deepcopy(board[k + cnt])
             cnt += 1
         # ite = 0
         # for slyce in boardSlices:
@@ -146,15 +146,25 @@ while True:
         # print newSlice
         # print board
         tetrominoFull.rlAction(board, nextPiece, score)
-        score2, board = tetrominoFull.removeCompleteLines(board)
-        time.sleep(1)
+        newScore, board = tetrominoFull.removeCompleteLines(board)
+        # change slices if board is changed from line removal
+        if newScore > 0:
+            cnt = 0
+            for slyce in boardSlices:
+                for k in range(4):
+                    boardSlices[cnt][k] = copy.deepcopy(board[k + cnt])
+                cnt += 1
+        score += newScore
+        time.sleep(.1)
         tetrominoFull.rlAction(board, nextPiece, score)
         oldPiece = copy.deepcopy(piece)
         piece = copy.deepcopy(nextPiece)
-        if tetrominoFull.getHighestRow(board)<=2:
+        # print tetrominoFull.getHighestRow(board)
+
+        # if tetrominoFull.getHighestRow(board) <= 3:
+        if ended:
             break
-    print 'Total lines in %d score: %d' % (num_iter, score)
+    print 'In %d moves, score: %d' % (i + 1, score)
 
 
 print "Done"
-
