@@ -31,7 +31,7 @@ env = TetroEnv(tetromino4.getBlankBoard())
 task = TetroTask(env)
 experiment = Experiment(task, agent)
 # Train the learner
-num_iter = 1000000
+num_iter = 5000
 for i in range(num_iter):
     if i % (num_iter/100) == 0:
         stdout.write("\rTraining %d%% complete" % (i * 100 / num_iter))
@@ -50,7 +50,7 @@ display = False
 main = False
 
 print epsilon
-
+num_itr = 100
 while True:
     foo = raw_input('Agent is done training.\nPress ENTER to test. Insert X and press enter to close.\n')
 
@@ -82,12 +82,14 @@ while True:
         if main:
             time.sleep(.5)
 
-        currReward = -10000
+            currReward = -10000
 # sets the current slice to a blank board
-        currSlice = copy.deepcopy(boardSlices[0])
+            currSlice = copy.deepcopy(boardSlices[0])
 # chooses a piece
-        pieces = [0, 1, 2, 3, 4, 5, 6]
-        nextPiece = random.choice(pieces)
+            nextPiece = random.choice(pieces)
+            pieces.remove(nextPiece)
+            if len(pieces) == 0:
+                pieces = [0, 1, 2, 3, 4, 5, 6]
 
 # Evaluates each board slice for piece placement
         iters = 0
@@ -165,6 +167,4 @@ while True:
         if ended:
             break
     print 'In %d moves, score: %d' % (i + 1, score)
-
-
 print "Done"

@@ -33,14 +33,15 @@ BLUE        = (  0,   0, 155)
 LIGHTBLUE   = ( 20,  20, 175)
 YELLOW      = (155, 155,   0)
 LIGHTYELLOW = (175, 175,  20)
+PURPLE      = (155,   0, 155)
+TEAL        = (  0, 155, 155)  
 
 BORDERCOLOR = BLUE
 BGCOLOR = BLACK
 TEXTCOLOR = WHITE
 TEXTSHADOWCOLOR = GRAY
-COLORS      = (     BLUE,      GREEN,      RED,      YELLOW)
+COLORS      = (     BLUE,      GREEN,      RED,      YELLOW, PURPLE,  WHITE, TEAL)
 LIGHTCOLORS = (LIGHTBLUE, LIGHTGREEN, LIGHTRED, LIGHTYELLOW)
-assert len(COLORS) == len(LIGHTCOLORS) # each color must have light color
 
 TEMPLATEWIDTH = 5
 TEMPLATEHEIGHT = 5
@@ -247,13 +248,12 @@ def intToPiece(raw_action, shape_num):
             'rotation': rotation,
             'x': x,
             'y': -1,
-            'color': random.randint(0, len(COLORS) - 1)}
+            'color': shape_num}
 
 
 def intToColorPiece(raw_action, shape_num):
     action = random_action_mapping[raw_action]
     piece = intToPiece(action, shape_num)
-    piece['color'] = random.randint(0, len(COLORS)-1)
 
 def actionIsValid(action, shape_num, board):
     piece = intToPiece(action, shape_num)
@@ -495,7 +495,7 @@ def drawBox(boxx, boxy, color, pixelx=None, pixely=None):
     if pixelx == None and pixely == None:
         pixelx, pixely = convertToPixelCoords(boxx, boxy)
     pygame.draw.rect(DISPLAYSURF, COLORS[color], (pixelx + 1, pixely + 1, BOXSIZE - 1, BOXSIZE - 1))
-    pygame.draw.rect(DISPLAYSURF, LIGHTCOLORS[color], (pixelx + 1, pixely + 1, BOXSIZE - 4, BOXSIZE - 4))
+    pygame.draw.rect(DISPLAYSURF, COLORS[color], (pixelx + 1, pixely + 1, BOXSIZE - 4, BOXSIZE - 4))
 
 
 def drawBoard(board):
