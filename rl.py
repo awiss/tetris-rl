@@ -25,14 +25,14 @@ gamma = 0.0
 learner = Q(alpha, gamma)
 print alpha
 print gamma
-epsilon = .5           
+epsilon = .5
 #tetromino4.main()
 #main = True
 learner._setExplorer(EpsilonGreedyExplorer(epsilon))
 agent = LearningAgent(table, learner)
 print epsilon
 # create environment, task, and experiment
-env = TetroEnv()
+env = TetroEnv(tetromino4.getBlankBoard())
 task = TetroTask(env)
 experiment = Experiment(task, agent)
 #env.setDisplay(True)

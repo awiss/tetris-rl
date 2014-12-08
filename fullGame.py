@@ -16,27 +16,36 @@ import random
 import copy
 
 
+main = False
 # Initialize state space
 table = ActionValueTable(2**15, 15)
 table.initialize(0.)
-# print sys.argv
+print sys.argv
 # create learner and agent
-learner = Q(.3, 0.0)
-epsilon = .3
+alpha = .3
+gamma = 0.0
+learner = Q(alpha, gamma)
+print alpha
+print gamma
+epsilon = .5
+#tetromino4.main()
+#main = True
 learner._setExplorer(EpsilonGreedyExplorer(epsilon))
 agent = LearningAgent(table, learner)
-# print epsilon
+print epsilon
 # create environment, task, and experiment
 env = TetroEnv(tetromino4.getBlankBoard())
 task = TetroTask(env)
 experiment = Experiment(task, agent)
+#env.setDisplay(True)
 # Train the learner
-num_iter = 5000
+num_iter = 1000000
 for i in range(num_iter):
     if i % (num_iter/100) == 0:
         stdout.write("\rTraining %d%% complete" % (i * 100 / num_iter))
         stdout.flush()
-
+    if main:
+        time.sleep(2)
     experiment.doInteractions(1)
     agent.learn()
     agent.reset()
