@@ -37,7 +37,7 @@ task = TetroTask(env)
 experiment = Experiment(task, agent)
 #env.setDisplay(True)
 # Train the learner
-num_iter = 100
+num_iter = 1000
 for i in range(num_iter):
     if i % (num_iter/100) == 0:
         stdout.write("\rTraining %d%% complete" % (i * 100 / num_iter))
