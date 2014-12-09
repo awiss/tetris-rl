@@ -40,19 +40,20 @@ class TetroTask(Task):
         return cur_reward
 
     def multiReward(self, old, new):
-        old = old[0]
-        new = new[0]
-        old = np.array(old[0:-3]).reshape(4, 3)
-        rewardData = self.env.rewardData
-        new = np.array(new[0:-3]).reshape(4, 3)
-        old = (old * np.matrix([1, 2, 4]).reshape(3, 1)).A1
-       # print "Old is ", old
-       # print "Val is ", sum([val**2 for val in old])
-       # print self.last_val
-        new = (new * np.matrix([1, 2, 4]).reshape(3, 1)).A1
+        old = np.array(old)
+        new = np.array(new)
+        vals = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+                                12, 13, 14, 15, 16, 17, 18, 19, 20]).reshape(20, 1)
+        # print old.T
+        # print vals
+        old = (old.T * vals)
+
+        new = (new.T * vals)
+        # print old
+        # print np.sum(old)
        # print "New is ", new
        # print "New Val is ", sum([val**2 for val in new]);
-        return 10 - sum([val**2 for val in new]) + sum([val**2 for val in old])
+        return np.sum(new - old)
 
     @property
     def indim(self):
@@ -72,7 +73,7 @@ def obsToArray(x):
         else:
             arr.insert(0, 0)
     return arr
-            
+
 def arrayToObs(arr):
     return int(''.join(reversed([str(i) for i in arr])), base=2)
 

@@ -39,7 +39,7 @@ task = TetroTask(env)
 experiment = Experiment(task, agent)
 #env.setDisplay(True)
 # Train the learner
-num_iter = 1000000
+num_iter = 100
 for i in range(num_iter):
     if i % (num_iter/100) == 0:
         stdout.write("\rTraining %d%% complete" % (i * 100 / num_iter))
@@ -86,7 +86,7 @@ while True:
 
     # sets score to zero
     score = 0
-    num_iter = 10000
+    num_iter = 1000
     for i in range(num_iter):
         if main:
             time.sleep(.5)
@@ -133,8 +133,11 @@ while True:
             # print tetromino4.boardToState(envi.board, 1)
             # print 'reward', task.multiReward(tetromino4.boardToState(noTocar[iters], 1),
             #                                  tetromino4.boardToState(envi.board, 1))
-            if task.getReward() > currReward:
-                currReward = task.getReward()
+            print tetromino4.convertBoard(noTocar[iters])
+            if task.multiReward(tetromino4.convertBoard(noTocar[iters]),
+               tetromino4.convertBoard(boardSlices[iters])) > currReward:
+                currReward = task.multiReward(tetromino4.convertBoard(noTocar[iters]),
+                                              tetromino4.convertBoard(boardSlices[iters]))
                 slyceNum = iters
                 newSlice = copy.deepcopy(envi.board)
                 ended = envi.ended
